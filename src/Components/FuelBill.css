@@ -201,6 +201,14 @@ ul {
     width: 8.33333333% !important;
   }
 }
+.container {
+  margin-top: 100px;
+}
+@media print {
+  .noprint {
+    display: none;
+  }
+}
 
 /*!
 * @package IcoFont
