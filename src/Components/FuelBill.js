@@ -110,7 +110,7 @@ export default class FuelBill extends Component {
     // let { fuel_data } = this.state;
     let fy_fuel_data = [];
     for (let i = 0; i < fuel_data.length; i++) {
-      if (new Date(fuel_data[i].date).getTime() >= new Date(`03-01-2022 00:00`).getTime()) {
+      if (new Date(fuel_data[i].date).getTime() >= new Date(`04-01-2023 00:00`).getTime()) {
         fy_fuel_data.push(fuel_data[i]);
       }
     }
