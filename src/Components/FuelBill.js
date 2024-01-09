@@ -10,6 +10,7 @@ export default class FuelBill extends Component {
       receipt_no: 5050,
       address: "",
       amount: "",
+      mean: "4000",
       bills: [],
       pdf_view: false,
       sum_amount: 0,
@@ -42,32 +43,38 @@ export default class FuelBill extends Component {
   };
 
   _generateAmountArray = (total_number_of_bills) => {
-    let amount_arr = [];
+    let amount_arr = [], { mean } = this.state;
+    mean = parseInt(mean);
     for (let i = 0; i < parseInt(total_number_of_bills / 2); i++) {
       let ei = total_number_of_bills - 1 - i;
       let diff = this._generateRandomNumber(0, 1000);
       if (i % 2 == 0) {
-        amount_arr[i] = 4000 - diff;
-        amount_arr[ei] = 4000 + diff;
+        amount_arr[i] = mean - diff;
+        amount_arr[ei] = mean + diff;
       } else {
-        amount_arr[i] = 4000 + diff;
-        amount_arr[ei] = 4000 - diff;
+        amount_arr[i] = mean + diff;
+        amount_arr[ei] = mean - diff;
       }
     }
     if (total_number_of_bills % 2 !== 0) {
-      amount_arr[parseInt(total_number_of_bills / 2)] = 4000;
+      amount_arr[parseInt(total_number_of_bills / 2)] = mean;
     }
     console.log(amount_arr);
     return amount_arr;
   };
 
   _generateFuelBills = () => {
-    let { amount, fuel_data, sum_amount, sum_ltrs } = this.state;
-    if (amount === "" || amount === null || isNaN(amount) || amount.includes(".") || amount > 4000 * 318) {
-      alert("Enter valid integer number in total amount less than 1272000");
+    let { amount, fuel_data, sum_amount, sum_ltrs, mean } = this.state;
+    if (mean === "" || mean === null || isNaN(mean) || mean.includes(".") || mean > 10000) {
+      alert("Enter valid integer number in mean amount less than 10000");
       return;
     }
-    let total_number_of_bills = parseInt(amount / 4000);
+    mean = parseInt(mean);
+    if (amount === "" || amount === null || isNaN(amount) || amount.includes(".") || amount > mean * 279) {
+      alert(`Enter valid integer number in total amount less than ${mean * 279}`);
+      return;
+    }
+    let total_number_of_bills = parseInt(amount / mean);
     let bills = [];
     let fuel_data_length = fuel_data.length;
     let skip_factor = parseInt(fuel_data_length / total_number_of_bills);
@@ -103,7 +110,7 @@ export default class FuelBill extends Component {
     // let { fuel_data } = this.state;
     let fy_fuel_data = [];
     for (let i = 0; i < fuel_data.length; i++) {
-      if (new Date(fuel_data[i].date).getTime() >= new Date(`03-01-2022 00:00`).getTime()) {
+      if (new Date(fuel_data[i].date).getTime() >= new Date(`04-01-2023 00:00`).getTime()) {
         fy_fuel_data.push(fuel_data[i]);
       }
     }
@@ -115,7 +122,7 @@ export default class FuelBill extends Component {
   }
 
   render() {
-    const { fuel_data, address, amount, receipt_no, bills, pdf_view, total_number_of_bills, sum_amount, sum_ltrs } = this.state;
+    const { fuel_data, address, amount, mean, receipt_no, bills, pdf_view, total_number_of_bills, sum_amount, sum_ltrs } = this.state;
     return (
       <div className="">
         {!pdf_view ? (
@@ -220,6 +227,20 @@ export default class FuelBill extends Component {
                           <div data-v-c7ff15a2="" className="invalid-feedback">
                             {" "}
                             Total Amount is required
+                          </div>
+                        </div>
+                      </fieldset>
+                    </div>
+                    <div data-v-c7ff15a2="" className="col-lg-6">
+                      <fieldset data-v-c7ff15a2="" className="form-group" id="__BVID__75">
+                        <legend tabIndex="-1" className="bv-no-focus-ring col-form-label pt-0" id="__BVID__75__BV_label_">
+                          Mean Bill Amount *
+                        </legend>
+                        <div>
+                          <input data-v-c7ff15a2="" onChange={(e) => this.onChange(e, "mean")} value={mean} type="text" placeholder="Total Mean Amount" className="form-control" id="__BVID__76" required="required" aria-required="true" />
+                          <div data-v-c7ff15a2="" className="invalid-feedback">
+                            {" "}
+                            Mean Bill Amount is required
                           </div>
                         </div>
                       </fieldset>
