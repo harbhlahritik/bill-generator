@@ -27,7 +27,7 @@ export default class FuelBill extends Component {
   };
 
   _getTime = () => {
-    let ran_time1 = `${this._generateRandomNumber(10, 23)}:${this._generateRandomNumber(10, 54)}:${this._generateRandomNumber(10, 54)}`;
+    let ran_time1 = `${this._generateRandomNumber(10, 22)}:${this._generateRandomNumber(10, 54)}:${this._generateRandomNumber(10, 54)}`;
     let [hour, min, sec] = ran_time1.split(":");
     min = parseInt(min) + parseInt(this._generateRandomNumber(1, 2));
     sec = parseInt(sec) + parseInt(this._generateRandomNumber(1, 2));
@@ -70,18 +70,18 @@ export default class FuelBill extends Component {
       return;
     }
     mean = parseInt(mean);
-    if (amount === "" || amount === null || isNaN(amount) || amount.includes(".") || amount > mean * 279) {
-      alert(`Enter valid integer number in total amount less than ${mean * 279}`);
+    if (amount === "" || amount === null || isNaN(amount) || amount.includes(".") || amount > mean * 366) {
+      alert(`Enter valid integer number in total amount less than ${mean * 366}`);
       return;
     }
     let total_number_of_bills = parseInt(amount / mean);
     let bills = [];
     let fuel_data_length = fuel_data.length;
-    let skip_factor = parseInt(fuel_data_length / total_number_of_bills);
+    let skip_factor = parseInt((fuel_data_length-1) / (total_number_of_bills-1));
     let amount_arr = this._generateAmountArray(total_number_of_bills);
     let receipt_no = 2102709341; // starting txn number
     for (let i = 0; i < total_number_of_bills; i++) {
-      let fuel_value = fuel_data[skip_factor * (i + 1)];
+      let fuel_value = fuel_data[skip_factor * (i)];
       let times_obj = this._getTime();
       let txn_id = this._generateRandomNumber(receipt_no + 10000, receipt_no + 1000000);
       bills.push({
