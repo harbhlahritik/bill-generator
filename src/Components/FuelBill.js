@@ -433,6 +433,15 @@ export default class FuelBill extends Component {
                   {/* <button data-v-c7ff15a2="" type="Clear" className="btn btn ml-3 mb-0 btn-primary">
               Clear
             </button> */}
+              <div className="" style={{}}>
+                <div className="" style={{ fontWeight: 500, marginTop: "4em" }}>Note:</div>
+                  <div className="">Bills are generated with deviation of 500 from the provided Mean Bill Amount</div>
+                  <div className="" style={{ marginTop: "1em" }}>For Best Results with even spread throughout the year -</div>
+                  <div className="">Divide Total Amount by 92 and use that as Mean Bill Amount rounded down</div>
+                  <div className="">This will give bills with 4 days seperation between them</div>
+              </div>
+                  
+      
                   <div data-v-7e8502bc="" data-v-c7ff15a2="" className="creditsRemain">
                     {/* <span data-v-7e8502bc="">This bill generation is absolutely free.</span> */}
                     <br data-v-7e8502bc="" />
