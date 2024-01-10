@@ -47,7 +47,7 @@ export default class FuelBill extends Component {
     mean = parseInt(mean);
     for (let i = 0; i < parseInt(total_number_of_bills / 2); i++) {
       let ei = total_number_of_bills - 1 - i;
-      let diff = this._generateRandomNumber(0, 1000);
+      let diff = this._generateRandomNumber(0, 500);
       if (i % 2 == 0) {
         amount_arr[i] = mean - diff;
         amount_arr[ei] = mean + diff;
