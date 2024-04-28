@@ -15,8 +15,16 @@ export default class FuelBill extends Component {
       pdf_view: false,
       sum_amount: 0,
       sum_ltrs: 0,
+      month_mode: true,
+      number_of_bills: "1",
+      petrol_rate: "94.8",
+      month: "2024-04",
     };
   }
+
+  _switch_mode = () => {
+    this.setState((prevState) => ({ month_mode: !prevState.month_mode }));
+  };
 
   onChange = (e, id) => {
     this.setState({ [id]: e.target.value });
@@ -43,7 +51,8 @@ export default class FuelBill extends Component {
   };
 
   _generateAmountArray = (total_number_of_bills) => {
-    let amount_arr = [], { mean } = this.state;
+    let amount_arr = [],
+      { mean } = this.state;
     mean = parseInt(mean);
     for (let i = 0; i < parseInt(total_number_of_bills / 2); i++) {
       let ei = total_number_of_bills - 1 - i;
@@ -77,11 +86,71 @@ export default class FuelBill extends Component {
     let total_number_of_bills = parseInt(amount / mean);
     let bills = [];
     let fuel_data_length = fuel_data.length;
-    let skip_factor = parseInt((fuel_data_length-1) / (total_number_of_bills-1));
+    let skip_factor = parseInt((fuel_data_length - 1) / (total_number_of_bills - 1));
     let amount_arr = this._generateAmountArray(total_number_of_bills);
     let receipt_no = 2102709341; // starting txn number
     for (let i = 0; i < total_number_of_bills; i++) {
-      let fuel_value = fuel_data[skip_factor * (i)];
+      let fuel_value = fuel_data[skip_factor * i];
+      let times_obj = this._getTime();
+      let txn_id = this._generateRandomNumber(receipt_no + 10000, receipt_no + 1000000);
+      bills.push({
+        amount: amount_arr[i].toFixed(2),
+        date: new Date(fuel_value.date),
+        time: times_obj.time,
+        rate: fuel_value.rate,
+        ltr: parseFloat(amount_arr[i] / fuel_value.rate).toFixed(2),
+        bay_no: this._generateRandomNumber(1, 8),
+        nozzle_no: this._generateRandomNumber(1, 4),
+        product: "PETROL",
+        paymode: "CASH",
+        txn_id,
+        hdfc_no: `D ${fuel_value.date.split("-")[1]}/${fuel_value.date.split("-")[0]}`,
+        txnSt: times_obj.txnSt,
+        txnEnd: times_obj.txnEnd,
+      });
+      sum_amount += amount_arr[i];
+      sum_ltrs += parseFloat(amount_arr[i] / fuel_value.rate);
+      receipt_no = txn_id;
+    }
+    this.setState({ bills, pdf_view: true, sum_amount, sum_ltrs: sum_ltrs.toFixed(2), total_number_of_bills });
+  };
+
+  _generateFuelBillsMonth = () => {
+    let { amount, sum_amount, sum_ltrs, mean, number_of_bills, petrol_rate, month } = this.state;
+    if (mean === "" || mean === null || isNaN(mean) || mean.includes(".") || mean > 50000) {
+      alert("Enter valid integer number in mean amount less than 50000");
+      return;
+    }
+    mean = parseInt(mean);
+    if (number_of_bills === "" || number_of_bills === null || isNaN(number_of_bills) || number_of_bills.includes(".") || number_of_bills > 30) {
+      alert(`Enter valid integer number in number of bills and less than 30`);
+      return;
+    }
+    number_of_bills = parseInt(number_of_bills);
+    if (petrol_rate === "" || petrol_rate === null || isNaN(petrol_rate)) {
+      alert(`Enter valid float number in petrol rate`);
+      return;
+    }
+    petrol_rate = parseFloat(petrol_rate);
+    if (month === "" || month === null) {
+      alert(`Enter valid month`);
+      return;
+    }
+    let month_arr = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+      month_tenure = 30;
+    if (month && month.includes("-")) {
+      let month_number = parseInt(month.split("-")[1]) - 1;
+      month_tenure = month_arr[month_number];
+    }
+    let total_number_of_bills = number_of_bills;
+    let bills = [];
+    console.log("month_tenure", month_tenure, "total_number_of_bills", total_number_of_bills);
+    let skip_factor = total_number_of_bills > 1 ? parseInt((month_tenure - 1) / (total_number_of_bills - 1)) : 0;
+    let amount_arr = this._generateAmountArray(total_number_of_bills);
+    let receipt_no = 2102709341 + this._generateRandomNumber(1000, 2102709341); // starting txn number
+    for (let i = 0; i < total_number_of_bills; i++) {
+      console.log("month", month, "i", i, "skip_factor", skip_factor);
+      let fuel_value = { date: new Date(new Date(month).getTime() + i * skip_factor * 60 * 60 * 24 * 1000).toISOString().split("T")[0], rate: petrol_rate };
       let times_obj = this._getTime();
       let txn_id = this._generateRandomNumber(receipt_no + 10000, receipt_no + 1000000);
       bills.push({
@@ -122,7 +191,7 @@ export default class FuelBill extends Component {
   }
 
   render() {
-    const { fuel_data, address, amount, mean, receipt_no, bills, pdf_view, total_number_of_bills, sum_amount, sum_ltrs } = this.state;
+    const { fuel_data, address, amount, mean, receipt_no, bills, pdf_view, total_number_of_bills, sum_amount, sum_ltrs, month_mode, number_of_bills, petrol_rate, month } = this.state;
     return (
       <div className="">
         {!pdf_view ? (
@@ -217,34 +286,98 @@ export default class FuelBill extends Component {
                   </div>
                 </fieldset>
               </div> */}
-                    <div data-v-c7ff15a2="" className="col-lg-6">
-                      <fieldset data-v-c7ff15a2="" className="form-group" id="__BVID__75">
-                        <legend tabIndex="-1" className="bv-no-focus-ring col-form-label pt-0" id="__BVID__75__BV_label_">
-                          Total Amount *
-                        </legend>
-                        <div>
-                          <input data-v-c7ff15a2="" onChange={(e) => this.onChange(e, "amount")} value={amount} type="text" placeholder="Total Amount" className="form-control" id="__BVID__76" required="required" aria-required="true" />
-                          <div data-v-c7ff15a2="" className="invalid-feedback">
-                            {" "}
-                            Total Amount is required
-                          </div>
+
+                    {month_mode ? (
+                      <>
+                        <div data-v-c7ff15a2="" className="col-lg-6">
+                          <fieldset data-v-c7ff15a2="" className="form-group" id="__BVID__75">
+                            <legend tabIndex="-1" className="bv-no-focus-ring col-form-label pt-0" id="__BVID__75__BV_label_">
+                              Mean Bill Amount *
+                            </legend>
+                            <div>
+                              <input data-v-c7ff15a2="" onChange={(e) => this.onChange(e, "mean")} value={mean} type="text" placeholder="Total Mean Amount" className="form-control" id="__BVID__76" required="required" aria-required="true" />
+                              <div data-v-c7ff15a2="" className="invalid-feedback">
+                                {" "}
+                                Mean Bill Amount is required
+                              </div>
+                            </div>
+                          </fieldset>
                         </div>
-                      </fieldset>
-                    </div>
-                    <div data-v-c7ff15a2="" className="col-lg-6">
-                      <fieldset data-v-c7ff15a2="" className="form-group" id="__BVID__75">
-                        <legend tabIndex="-1" className="bv-no-focus-ring col-form-label pt-0" id="__BVID__75__BV_label_">
-                          Mean Bill Amount *
-                        </legend>
-                        <div>
-                          <input data-v-c7ff15a2="" onChange={(e) => this.onChange(e, "mean")} value={mean} type="text" placeholder="Total Mean Amount" className="form-control" id="__BVID__76" required="required" aria-required="true" />
-                          <div data-v-c7ff15a2="" className="invalid-feedback">
-                            {" "}
-                            Mean Bill Amount is required
-                          </div>
+                        <div data-v-c7ff15a2="" className="col-lg-6">
+                          <fieldset data-v-c7ff15a2="" className="form-group" id="__BVID__75">
+                            <legend tabIndex="-1" className="bv-no-focus-ring col-form-label pt-0" id="__BVID__75__BV_label_">
+                              Number of Bills *
+                            </legend>
+                            <div>
+                              <input data-v-c7ff15a2="" onChange={(e) => this.onChange(e, "number_of_bills")} value={number_of_bills} type="text" placeholder="Number of Bills" className="form-control" id="__BVID__76" required="required" aria-required="true" />
+                              <div data-v-c7ff15a2="" className="invalid-feedback">
+                                {" "}
+                                Number of Bills is required
+                              </div>
+                            </div>
+                          </fieldset>
                         </div>
-                      </fieldset>
-                    </div>
+                        <div data-v-c7ff15a2="" className="col-lg-6">
+                          <fieldset data-v-c7ff15a2="" className="form-group" id="__BVID__75">
+                            <legend tabIndex="-1" className="bv-no-focus-ring col-form-label pt-0" id="__BVID__75__BV_label_">
+                              Petrol Rate *
+                            </legend>
+                            <div>
+                              <input data-v-c7ff15a2="" onChange={(e) => this.onChange(e, "petrol_rate")} value={petrol_rate} type="text" placeholder="Petrol Rate" className="form-control" id="__BVID__76" required="required" aria-required="true" />
+                              <div data-v-c7ff15a2="" className="invalid-feedback">
+                                {" "}
+                                Petrol Rate is required
+                              </div>
+                            </div>
+                          </fieldset>
+                        </div>
+                        <div data-v-c7ff15a2="" className="col-lg-6">
+                          <fieldset data-v-c7ff15a2="" className="form-group" id="__BVID__75">
+                            <legend tabIndex="-1" className="bv-no-focus-ring col-form-label pt-0" id="__BVID__75__BV_label_">
+                              Select Month *
+                            </legend>
+                            <div>
+                              <input data-v-c7ff15a2="" onChange={(e) => this.onChange(e, "month")} value={month} type="month" placeholder="month" className="form-control" id="__BVID__76" required="required" aria-required="true" />
+                              <div data-v-c7ff15a2="" className="invalid-feedback">
+                                {" "}
+                                Month is required
+                              </div>
+                            </div>
+                          </fieldset>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div data-v-c7ff15a2="" className="col-lg-6">
+                          <fieldset data-v-c7ff15a2="" className="form-group" id="__BVID__75">
+                            <legend tabIndex="-1" className="bv-no-focus-ring col-form-label pt-0" id="__BVID__75__BV_label_">
+                              Total Amount *
+                            </legend>
+                            <div>
+                              <input data-v-c7ff15a2="" onChange={(e) => this.onChange(e, "amount")} value={amount} type="text" placeholder="Total Amount" className="form-control" id="__BVID__76" required="required" aria-required="true" />
+                              <div data-v-c7ff15a2="" className="invalid-feedback">
+                                {" "}
+                                Total Amount is required
+                              </div>
+                            </div>
+                          </fieldset>
+                        </div>
+                        <div data-v-c7ff15a2="" className="col-lg-6">
+                          <fieldset data-v-c7ff15a2="" className="form-group" id="__BVID__75">
+                            <legend tabIndex="-1" className="bv-no-focus-ring col-form-label pt-0" id="__BVID__75__BV_label_">
+                              Mean Bill Amount *
+                            </legend>
+                            <div>
+                              <input data-v-c7ff15a2="" onChange={(e) => this.onChange(e, "mean")} value={mean} type="text" placeholder="Total Mean Amount" className="form-control" id="__BVID__76" required="required" aria-required="true" />
+                              <div data-v-c7ff15a2="" className="invalid-feedback">
+                                {" "}
+                                Mean Bill Amount is required
+                              </div>
+                            </div>
+                          </fieldset>
+                        </div>
+                      </>
+                    )}
                   </div>
                   {/* <div data-v-c7ff15a2="" className="row">
               <div data-v-c7ff15a2="" className="col-lg-6">
@@ -426,22 +559,37 @@ export default class FuelBill extends Component {
                 </fieldset>
               </div>
             </div> */}
-                  <button onClick={this._generateFuelBills} data-v-c7ff15a2="" type="submit" className="btn btn mb-0 btn-primary">
+                  <button onClick={!month_mode ? this._generateFuelBills : this._generateFuelBillsMonth} data-v-c7ff15a2="" type="submit" className="btn btn mb-0 btn-primary">
                     {" "}
                     Generate
                   </button>
+
+                  <div className="" style={{ marginTop: 10 }}>
+                    <button onClick={this._switch_mode} data-v-c7ff15a2="" type="" className="btn btn mb-0 btn-secondary">
+                      {" "}
+                      Switch to {month_mode ? "Financial Year" : "Month"} Mode
+                    </button>
+                  </div>
+
                   {/* <button data-v-c7ff15a2="" type="Clear" className="btn btn ml-3 mb-0 btn-primary">
               Clear
             </button> */}
-              <div className="" style={{}}>
-                <div className="" style={{ fontWeight: 500, marginTop: "4em" }}>Note:</div>
-                  <div className="">Bills are generated with deviation of 500 from the provided Mean Bill Amount</div>
-                  <div className="" style={{ marginTop: "1em" }}>For Best Results with even spread throughout the year -</div>
-                  <div className="">Divide Total Amount by 92 and use that as Mean Bill Amount rounded down</div>
-                  <div className="">This will give bills with 4 days seperation between them</div>
-              </div>
-                  
-      
+                  {!month_mode ? (
+                    <>
+                      <div className="" style={{}}>
+                        <div className="" style={{ fontWeight: 500, marginTop: "4em" }}>
+                          Note:
+                        </div>
+                        <div className="">Bills are generated with deviation of 500 from the provided Mean Bill Amount</div>
+                        <div className="" style={{ marginTop: "1em" }}>
+                          For Best Results with even spread throughout the year -
+                        </div>
+                        <div className="">Divide Total Amount by 92 and use that as Mean Bill Amount rounded down</div>
+                        <div className="">This will give bills with 4 days seperation between them</div>
+                      </div>
+                    </>
+                  ) : null}
+
                   <div data-v-7e8502bc="" data-v-c7ff15a2="" className="creditsRemain">
                     {/* <span data-v-7e8502bc="">This bill generation is absolutely free.</span> */}
                     <br data-v-7e8502bc="" />
@@ -456,6 +604,10 @@ export default class FuelBill extends Component {
               <div className="">Total Number of bills generated: {total_number_of_bills}</div>
               <div className="">Sum Amount: {sum_amount}</div>
               <div className="">Sum Liters: {sum_ltrs}</div>
+              <button onClick={() => window.location.reload()} data-v-c7ff15a2="" type="" className="btn btn mb-0 btn-primary">
+                {" "}
+                Generate More
+              </button>
             </div>
 
             {bills.map((bill) => (
