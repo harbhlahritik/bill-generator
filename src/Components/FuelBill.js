@@ -15,7 +15,7 @@ export default class FuelBill extends Component {
       pdf_view: false,
       sum_amount: 0,
       sum_ltrs: 0,
-      month_mode: true,
+      month_mode: false,
       number_of_bills: "1",
       petrol_rate: "94.8",
       month: "2024-04",
