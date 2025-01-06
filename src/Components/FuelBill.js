@@ -79,8 +79,8 @@ export default class FuelBill extends Component {
       return;
     }
     mean = parseInt(mean);
-    if (amount === "" || amount === null || isNaN(amount) || amount.includes(".") || amount > mean * 366) {
-      alert(`Enter valid integer number in total amount less than ${mean * 366}`);
+    if (amount === "" || amount === null || isNaN(amount) || amount.includes(".") || amount > (mean * 365) - 1) {
+      alert(`Enter valid integer number in total amount less than ${(mean * 365) - 1}`);
       return;
     }
     let total_number_of_bills = parseInt(amount / mean);
@@ -179,7 +179,7 @@ export default class FuelBill extends Component {
     // let { fuel_data } = this.state;
     let fy_fuel_data = [];
     for (let i = 0; i < fuel_data.length; i++) {
-      if (new Date(fuel_data[i].date).getTime() >= new Date(`04-01-2023 00:00`).getTime()) {
+      if (new Date(fuel_data[i].date).getTime() >= new Date(`04-01-2024 00:00`).getTime()) {
         fy_fuel_data.push(fuel_data[i]);
       }
     }
